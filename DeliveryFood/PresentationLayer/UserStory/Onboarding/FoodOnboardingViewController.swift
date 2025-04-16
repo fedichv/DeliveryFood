@@ -19,6 +19,13 @@ extension FoodOnboardingViewController {
     enum Constants {
         static let stackViewSide: CGFloat = 30
         static let stackViewHeight: CGFloat = 149
+        static let pageControlHeight: CGFloat = 20
+
+        static let buttonCornerRadius: CGFloat = 25
+        static let buttonFontSize: CGFloat = 18
+        static let stackViewSpacing: CGFloat = 20
+
+        static let pageControlInitialPage: Int = 0
     }
 }
 
@@ -31,11 +38,11 @@ class FoodOnboardingViewController: UIViewController {
     
     private lazy var nextButton: UIButton = {
         let button = UIButton()
-        button.layer.cornerRadius = 25
+        button.layer.cornerRadius = Constants.buttonCornerRadius
         button.backgroundColor = .brightGray
         button.setTitle("Next", for: .normal)
         button.setTitleColor(.black, for: .normal)
-        button.titleLabel?.font = .systemFont(ofSize: 18, weight: .bold)
+        button.titleLabel?.font = .systemFont(ofSize: Constants.buttonFontSize, weight: .bold)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(nextButtonTapped), for: .touchUpInside)
         return button
@@ -46,8 +53,6 @@ class FoodOnboardingViewController: UIViewController {
         control.currentPageIndicatorTintColor = .darkGray
         control.pageIndicatorTintColor = .lightGray
         control.translatesAutoresizingMaskIntoConstraints = false
-        control.numberOfPages = 3
-        control.currentPage = 0
         control.isUserInteractionEnabled = false
         return control
     }()
@@ -56,7 +61,7 @@ class FoodOnboardingViewController: UIViewController {
         let stackView = UIStackView()
         stackView.axis = .vertical
         stackView.distribution = .fillEqually
-        stackView.spacing = 20
+        stackView.spacing = Constants.stackViewSpacing
         stackView.translatesAutoresizingMaskIntoConstraints = false
         return stackView
     }()
@@ -92,9 +97,7 @@ class FoodOnboardingViewController: UIViewController {
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Constants.stackViewSide),
             stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Constants.stackViewSide),
             stackView.heightAnchor.constraint(equalToConstant: Constants.stackViewHeight),
-            
-            pageControl.heightAnchor.constraint(equalToConstant: 20),
-            
+                        
             pageContainerView.bottomAnchor.constraint(equalTo: stackView.topAnchor),
             pageContainerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             pageContainerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
@@ -110,7 +113,9 @@ class FoodOnboardingViewController: UIViewController {
     private func configure() {
         view.backgroundColor = .tennéOrTawny
         delegate = pageViewController
+        dataSource = pageViewController
         pageViewController.customDelegate = self
+        pageControl.numberOfPages = dataSource?.numberOfPageCount() ?? 0
     }
     
     @objc private func nextButtonTapped() {

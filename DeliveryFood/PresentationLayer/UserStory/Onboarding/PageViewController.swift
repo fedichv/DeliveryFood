@@ -31,7 +31,6 @@ class PageViewController: UIPageViewController {
     private var currentIndex = 0
     
     let pageData: [PageViewControllerModel] = [
-        //TODO: refactoring to PageViewControllerModel
         PageViewControllerModel(imageName: "chicken-leg",
                                 title: "Delicious Food",
                                 description: "Lorem ipsum dolor sit amet, consectetur \n adipiscing elit.",
@@ -104,7 +103,7 @@ extension PageViewController: UIPageViewControllerDataSource {
     }
 }
 extension PageViewController: UIPageViewControllerDelegate {
-
+    
     func pageViewController(_ pageViewController: UIPageViewController, didFinishAnimating finished: Bool,previousViewControllers: [UIViewController],transitionCompleted completed: Bool) {
         guard completed,
               let currentVC = pageViewController.viewControllers?.first,
@@ -119,6 +118,12 @@ extension PageViewController: UIPageViewControllerDelegate {
 extension PageViewController: FoodOnboardingViewControllerDelegate {
     func tapOnNextButton() {
         goToNextPage()
+    }
+}
+
+extension PageViewController: FoodOnboardingViewControllerDataSource {
+    func numberOfPageCount() -> Int {
+        return pages.count
     }
 }
 

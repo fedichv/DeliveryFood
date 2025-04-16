@@ -49,9 +49,6 @@ class FoodPageContentViewController: UIViewController {
         return title
     }()
     
-    
-    weak var dataSource: FoodOnboardingViewControllerDataSource?
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()

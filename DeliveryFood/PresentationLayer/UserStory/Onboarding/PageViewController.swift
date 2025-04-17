@@ -14,6 +14,29 @@ struct PageViewControllerModel {
     let textButton: String
 }
 
+struct OnboardingConstants {
+    static let pages: [PageViewControllerModel] = [
+        PageViewControllerModel(
+            imageName: "chicken-leg",
+            title: "Delicious Food",
+            description: "Lorem ipsum dolor sit amet, consectetur \n adipiscing elit.",
+            textButton: "Next"
+        ),
+        PageViewControllerModel(
+            imageName: "shipped",
+            title: "Fast Shipping",
+            description: "Lorem ipsum dolor sit amet, consectetur\n adipiscing elit. Interdum rhoncus nulla.",
+            textButton: "Next"
+        ),
+        PageViewControllerModel(
+            imageName: "medal",
+            title: "Certificate Food",
+            description: "Lorem ipsum dolor sit amet, consectetur\n adipiscing elit. Morbi ultricies mauris a id.",
+            textButton: "Cool!"
+        ),
+    ]
+}
+
 protocol PageViewControllerDelegate: AnyObject {
     func changePage(index: Int, model: PageViewControllerModel)
 }
@@ -27,43 +50,28 @@ class PageViewController: UIPageViewController {
     weak var customDelegate: PageViewControllerDelegate?
     
     private var pages: [FoodPageContentViewController] = []
-    private var page: FoodPageContentViewController!
     private var currentIndex = 0
     
-    let pageData: [PageViewControllerModel] = [
-        PageViewControllerModel(imageName: "chicken-leg",
-                                title: "Delicious Food",
-                                description: "Lorem ipsum dolor sit amet, consectetur \n adipiscing elit.",
-                                textButton: "Next"),
-        PageViewControllerModel(imageName: "shipped",
-                                title: "Fast Shipping",
-                                description: "Lorem ipsum dolor sit amet, consectetur\n adipiscing elit. Interdum rhoncus nulla.",
-                                textButton: "Next"),
-        PageViewControllerModel(imageName: "medal",
-                                title: "Certificate Food",
-                                description: "Lorem ipsum dolor sit amet, consectetur\n adipiscing elit. Morbi ultricies mauris a id.",
-                                textButton: "Cool!")
-    ]
     
     override func viewDidLoad() {
         super.viewDidLoad()
         self.dataSource = self
         self.delegate = self
         
-        for page in pageData {
+        for model in OnboardingConstants.pages {
             let contentVC = FoodPageContentViewController()
             contentVC.configure (
-                imageName: page.imageName,
-                onboardingTitle: page.title,
-                ondoardingDescription: page.description,
-                button: page.textButton
+                imageName: model.imageName,
+                onboardingTitle: model.title,
+                ondoardingDescription: model.description,
+                button: model.textButton
             )
             pages.append(contentVC)
         }
         
         if let firstPage = pages.first {
             setViewControllers([firstPage], direction: .forward, animated: true, completion: nil)
-            customDelegate?.changePage(index: currentIndex, model: pageData[currentIndex])
+            customDelegate?.changePage(index: currentIndex, model: OnboardingConstants.pages[currentIndex])
         }
     }
     
@@ -72,7 +80,7 @@ class PageViewController: UIPageViewController {
         guard nextIndex < pages.count else { return }
         setViewControllers([pages[nextIndex]], direction: .forward, animated: true, completion: nil)
         currentIndex = nextIndex
-        customDelegate?.changePage(index: currentIndex, model: pageData[currentIndex])
+        customDelegate?.changePage(index: currentIndex, model: OnboardingConstants.pages[currentIndex])
     }
 }
 
@@ -111,7 +119,7 @@ extension PageViewController: UIPageViewControllerDelegate {
             return
         }
         currentIndex = index
-        customDelegate?.changePage(index: currentIndex, model: pageData[currentIndex])
+        customDelegate?.changePage(index: currentIndex, model: OnboardingConstants.pages[currentIndex])
     }
 }
 

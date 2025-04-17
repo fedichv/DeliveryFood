@@ -20,8 +20,6 @@ extension FoodPageContentViewController {
     }
 }
 
-
-
 class FoodPageContentViewController: UIViewController {
     
     private let imageOnboarding: UIImageView = {

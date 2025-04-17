@@ -3,7 +3,6 @@
 //  DeliveryFood
 //
 //  Created by Владимир Федичев on 4/9/25.
-//
 
 import UIKit
 
@@ -24,8 +23,6 @@ extension FoodOnboardingViewController {
         static let buttonCornerRadius: CGFloat = 25
         static let buttonFontSize: CGFloat = 18
         static let stackViewSpacing: CGFloat = 20
-
-        static let pageControlInitialPage: Int = 0
     }
 }
 
@@ -40,7 +37,6 @@ class FoodOnboardingViewController: UIViewController {
         let button = UIButton()
         button.layer.cornerRadius = Constants.buttonCornerRadius
         button.backgroundColor = .brightGray
-        button.setTitle("Next", for: .normal)
         button.setTitleColor(.black, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: Constants.buttonFontSize, weight: .bold)
         button.translatesAutoresizingMaskIntoConstraints = false

@@ -86,7 +86,7 @@ class SignInUpViewController: UIViewController {
             stackSignInUpView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
             stackSignInUpView.heightAnchor.constraint(equalToConstant: 120),
             
-            imageDishView.leadingAnchor.constraint(equalTo: view.leadingAnchor), 
+            imageDishView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: -15), 
             imageDishView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             imageDishView.widthAnchor.constraint(equalToConstant: 200),
             imageDishView.heightAnchor.constraint(equalToConstant: 100)

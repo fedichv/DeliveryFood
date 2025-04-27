@@ -38,6 +38,7 @@ class FoodOnboardingViewController: UIViewController {
         button.layer.cornerRadius = Constants.buttonCornerRadius
         button.backgroundColor = .brightGray
         button.setTitleColor(.black, for: .normal)
+        button.setTitle("Next", for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: Constants.buttonFontSize, weight: .bold)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.addTarget(self, action: #selector(nextButtonTapped), for: .touchUpInside)

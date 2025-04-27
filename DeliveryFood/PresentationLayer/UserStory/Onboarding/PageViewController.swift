@@ -52,7 +52,6 @@ class PageViewController: UIPageViewController {
     private var pages: [FoodPageContentViewController] = []
     private var currentIndex = 0
     
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.dataSource = self
@@ -77,10 +76,20 @@ class PageViewController: UIPageViewController {
     
     private func goToNextPage() {
         let nextIndex = currentIndex + 1
-        guard nextIndex < pages.count else { return }
+        guard nextIndex < pages.count else {
+            goToSignInUpVC()
+            return
+        }
         setViewControllers([pages[nextIndex]], direction: .forward, animated: true, completion: nil)
         currentIndex = nextIndex
         customDelegate?.changePage(index: currentIndex, model: OnboardingConstants.pages[currentIndex])
+    }
+    
+    private func goToSignInUpVC() {
+        UserDefaultsManager.shared.set(true, forKey: .isWatchedOnboarding)
+        
+        let signInUpVC = SignInUpViewController()
+        navigationController?.pushViewController(signInUpVC, animated: true)
     }
 }
 

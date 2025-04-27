@@ -7,18 +7,36 @@
 
 import UIKit
 
+class AppCoordinator {
+    weak var window: UIWindow?
+    
+    func start() {
+        if UserDefaultsManager.shared.getBool(forKey: .isWatchedOnboarding) {
+            let signInUpViewController = SignInUpViewController()
+            let uiNavigationVC = UINavigationController(rootViewController: signInUpViewController)
+            window?.rootViewController = uiNavigationVC
+            window?.makeKeyAndVisible()
+        } else {
+            let onboardingVC = FoodOnboardingViewController()
+            let uiNavigationVC = UINavigationController(rootViewController: onboardingVC)
+            window?.rootViewController = uiNavigationVC
+            window?.makeKeyAndVisible()
+        }
+    }
+}
+
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
-
+    private let coordinator = AppCoordinator()
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let scene = (scene as? UIWindowScene) else { return }
         
         window = UIWindow(windowScene: scene)
-        let onboardingVC =  AuthViewController()
-        window?.rootViewController = onboardingVC
-        window?.makeKeyAndVisible()
+        coordinator.window = window
+        
+        coordinator.start()
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {

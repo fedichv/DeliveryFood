@@ -19,7 +19,7 @@ extension FoodOnboardingViewController {
         static let stackViewSide: CGFloat = 30
         static let stackViewHeight: CGFloat = 149
         static let pageControlHeight: CGFloat = 20
-
+        
         static let buttonCornerRadius: CGFloat = 25
         static let buttonFontSize: CGFloat = 18
         static let stackViewSpacing: CGFloat = 20
@@ -27,7 +27,7 @@ extension FoodOnboardingViewController {
 }
 
 class FoodOnboardingViewController: UIViewController {
-
+    
     private var delegate: FoodOnboardingViewControllerDelegate?
     private var dataSource: FoodOnboardingViewControllerDataSource?
     
@@ -86,7 +86,7 @@ class FoodOnboardingViewController: UIViewController {
     }
     
     private func makeLayout() {
-
+        
         pageViewController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
             
@@ -94,7 +94,7 @@ class FoodOnboardingViewController: UIViewController {
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Constants.stackViewSide),
             stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Constants.stackViewSide),
             stackView.heightAnchor.constraint(equalToConstant: Constants.stackViewHeight),
-                        
+            
             pageContainerView.bottomAnchor.constraint(equalTo: stackView.topAnchor),
             pageContainerView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             pageContainerView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
@@ -106,7 +106,7 @@ class FoodOnboardingViewController: UIViewController {
             pageViewController.rootView.trailingAnchor.constraint(equalTo: pageContainerView.trailingAnchor)
         ])
     }
-
+    
     private func configure() {
         view.backgroundColor = .tennéOrTawny
         delegate = pageViewController

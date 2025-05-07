@@ -7,24 +7,6 @@
 
 import UIKit
 
-class AppCoordinator {
-    weak var window: UIWindow?
-    
-    func start() {
-        if UserDefaultsManager.shared.getBool(forKey: .isWatchedOnboarding) {
-            let signInUpViewController = SignInUpViewController()
-            let uiNavigationVC = UINavigationController(rootViewController: signInUpViewController)
-            window?.rootViewController = uiNavigationVC
-            window?.makeKeyAndVisible()
-        } else {
-            let onboardingVC = FoodOnboardingViewController()
-            let uiNavigationVC = UINavigationController(rootViewController: onboardingVC)
-            window?.rootViewController = uiNavigationVC
-            window?.makeKeyAndVisible()
-        }
-    }
-}
-
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?

@@ -71,12 +71,12 @@ class FoodOnboardingViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupUI()
+        setupViews()
         makeLayout()
         configure()
     }
     
-    private func setupUI() {
+    private func setupViews() {
         stackView.addArrangedSubview(nextButton)
         stackView.addArrangedSubview(pageControl)
         pageContainerView.addSubview(pageViewController.rootView)

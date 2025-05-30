@@ -13,11 +13,10 @@ final class UserDefaultsManager {
     
     private init() {}
     
-    // Пример: ключи можно вынести в enum
     enum Key: String {
         case username
         case isWatchedOnboarding
-//        case isLoggedIn
+        case isLoggedIn
 //        case launchCount
     }
     

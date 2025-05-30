@@ -7,6 +7,8 @@
 
 import UIKit
 
+// MARK: - Constants
+
 extension FoodPageContentViewController {
     enum Constants {
         static let imageSize: CGFloat = 200
@@ -20,7 +22,11 @@ extension FoodPageContentViewController {
     }
 }
 
+// MARK: - FoodPageContentViewController
+
 class FoodPageContentViewController: UIViewController {
+    
+    // MARK: - UI Elements
     
     private let imageOnboarding: UIImageView = {
         let image = UIImageView()
@@ -47,11 +53,15 @@ class FoodPageContentViewController: UIViewController {
         return title
     }()
     
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
         setupConstraints()
     }
+    
+    // MARK: - Setup
     
     private func setupViews() {
         view.addSubview(imageOnboarding)
@@ -75,6 +85,8 @@ class FoodPageContentViewController: UIViewController {
             ondoardingDescription.bottomAnchor.constraint(lessThanOrEqualTo: view.bottomAnchor, constant: Constants.descriptionBottomInset),
         ])
     }
+    
+    // MARK: - Configuration
     
     func configure(imageName: String, onboardingTitle: String, ondoardingDescription: String, button: String) {
         imageOnboarding.image = UIImage(named: imageName)

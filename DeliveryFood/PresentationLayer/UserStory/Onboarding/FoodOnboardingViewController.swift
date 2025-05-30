@@ -6,13 +6,18 @@
 
 import UIKit
 
+// MARK: - Protocols
+
 protocol FoodOnboardingViewControllerDelegate: AnyObject {
     func tapOnNextButton()
+    func didFinishOnboarding()
 }
 
 protocol FoodOnboardingViewControllerDataSource: AnyObject {
     func numberOfPageCount() -> Int
 }
+
+// MARK: - Constants
 
 extension FoodOnboardingViewController {
     enum Constants {
@@ -26,12 +31,18 @@ extension FoodOnboardingViewController {
     }
 }
 
+// MARK: - FoodOnboardingViewController
+
 class FoodOnboardingViewController: UIViewController {
     
-    private var delegate: FoodOnboardingViewControllerDelegate?
-    private var dataSource: FoodOnboardingViewControllerDataSource?
+    // MARK: - Properties
+    
+    weak var delegate: FoodOnboardingViewControllerDelegate?
+    weak var dataSource: FoodOnboardingViewControllerDataSource?
     
     private let pageViewController = PageViewController(transitionStyle: .scroll, navigationOrientation: .horizontal, options: nil)
+    
+    // MARK: - UI Elements
     
     private lazy var nextButton: UIButton = {
         let button = UIButton()
@@ -69,12 +80,16 @@ class FoodOnboardingViewController: UIViewController {
         return view
     }()
     
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
         makeLayout()
         configure()
     }
+    
+    // MARK: - Setup
     
     private func setupViews() {
         stackView.addArrangedSubview(nextButton)
@@ -86,10 +101,8 @@ class FoodOnboardingViewController: UIViewController {
     }
     
     private func makeLayout() {
-        
         pageViewController.view.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            
             stackView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Constants.stackViewSide),
             stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Constants.stackViewSide),
@@ -115,12 +128,20 @@ class FoodOnboardingViewController: UIViewController {
         pageControl.numberOfPages = dataSource?.numberOfPageCount() ?? 0
     }
     
+    // MARK: - Actions
+    
     @objc private func nextButtonTapped() {
         delegate?.tapOnNextButton()
     }
 }
 
+// MARK: - PageViewControllerDelegate
+
 extension FoodOnboardingViewController: PageViewControllerDelegate {
+    func didFinishOnboarding() {
+        delegate?.didFinishOnboarding()
+    }
+    
     func changePage(index: Int, model: PageViewControllerModel) {
         pageControl.currentPage = index
         nextButton.setTitle(model.textButton, for: .normal)

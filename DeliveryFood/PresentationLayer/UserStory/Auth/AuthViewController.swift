@@ -4,6 +4,7 @@
 //
 //  Created by Владимир Федичев on 4/20/25.
 //
+
 import UIKit
 
 // MARK: - Constants
@@ -36,15 +37,29 @@ extension AuthViewController {
     }
 }
 
+// MARK: - AuthMode
 
 enum AuthMode: String {
     case signIn = "Sign In"
     case signUp = "Sign Up"
 }
 
+// MARK: - Protocols
+
+protocol AutAuthViewOutput: AnyObject {
+    func didChangeSearchText(_ text: String)
+}
+
+// MARK: - AuthViewController
+
 final class AuthViewController: UIViewController {
     
+    // MARK: - Properties
+    
+    weak var viewModel: AutAuthViewOutput?
     private let authMode: AuthMode
+    
+    // MARK: - Init
     
     init(authMode: AuthMode) {
         self.authMode = authMode
@@ -54,6 +69,8 @@ final class AuthViewController: UIViewController {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+    
+    // MARK: - UI Elements
     
     private let titleSignInOrSignUp: UILabel = {
         let title = UILabel()
@@ -123,13 +140,18 @@ final class AuthViewController: UIViewController {
         return image
     }()
     
+    // MARK: - Lifecycle
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         configure()
         setupViews()
         setupConstraints()
         configureForAuthMode()
+        hideKeyboardWhenTappedAround()
     }
+    
+    // MARK: - Setup Methods
     
     private func setupViews() {
         view.addSubview(stackView)
@@ -176,5 +198,36 @@ final class AuthViewController: UIViewController {
             signInOrSignUpButton.setTitle(Constants.signUpTitle, for: .normal)
             textFieldReEnterPassword.isHidden = false
         }
+    }
+    
+    // MARK: - Actions
+    
+    @objc private func handleAuthButtonTapped() {
+        switch authMode {
+        case .signIn:
+            // Переход к TabBarController
+            let tabBarVC = MainTabBarController()
+            tabBarVC.modalPresentationStyle = .fullScreen
+            present(tabBarVC, animated: true, completion: nil)
+
+        case .signUp:
+            // Переход к экрану входа
+            let signInVC = AuthViewController(authMode: .signIn)
+            signInVC.modalPresentationStyle = .fullScreen
+            present(signInVC, animated: true, completion: nil)
+        }
+    }
+}
+
+// MARK: - UITextFieldDelegate
+
+extension AuthViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder()
+        return true
+    }
+
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+        viewModel?.didChangeSearchText(textField.text ?? "")
     }
 }

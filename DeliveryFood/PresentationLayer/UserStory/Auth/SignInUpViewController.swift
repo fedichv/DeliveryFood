@@ -33,8 +33,11 @@ extension SignInUpViewController {
     }
 }
 
+// MARK: - SignInUpViewController
 
 final class SignInUpViewController: UIViewController {
+
+    // MARK: - UI Elements
 
     private let imageSignInUpView: UIImageView = {
         let image = UIImageView()
@@ -83,6 +86,8 @@ final class SignInUpViewController: UIViewController {
         return stackView
     }()
 
+    // MARK: - Lifecycle
+
     override func viewDidLoad() {
         super.viewDidLoad()
         setupViews()
@@ -98,6 +103,8 @@ final class SignInUpViewController: UIViewController {
         UserDefaultsManager.shared.set(true, forKey: .isWatchedOnboarding)
     }
     
+    // MARK: - Setup Methods
+
     private func setupViews() {
         view.addSubview(imageSignInUpView)
         view.addSubview(stackSignInUpView)
@@ -127,9 +134,13 @@ final class SignInUpViewController: UIViewController {
         ])
     }
 
+    // MARK: - Configuration
+
     private func configure() {
         view.backgroundColor = .white
     }
+
+    // MARK: - Actions
 
     @objc private func didTapSignIn() {
         let authVC = AuthViewController(authMode: .signIn)

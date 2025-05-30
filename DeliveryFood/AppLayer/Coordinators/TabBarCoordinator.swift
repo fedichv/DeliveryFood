@@ -1,17 +1,28 @@
 //
-//  AppCoordinator.swift
+//  TabBarCoordinator.swift
 //  DeliveryFood
 //
-//  Created by Владимир Федичев on 5/3/25.
+//  Created by Владимир Федичев on 5/13/25.
 //
 import UIKit
 
-class AppCoordinator {
-    weak var window: UIWindow?
+class TabBarCoordinator: Coordinator {
+    var childCoordinators: [Coordinator] = []
+    
+    var uiNavigationController: UINavigationController?
+    
+    var parent: Coordinator?
+    
+    private var window: UIWindow
+    init(window: UIWindow) {
+        self.window = window
+    }
     
     func start() {
+        let homeViewModel = HomeScreenViewModel()
+        let homeVC = HomeScreenViewController(viewModel: homeViewModel)
+        homeViewModel.view = homeVC
         
-        let homeVC = HomeScreenViewController()
         homeVC.tabBarItem = UITabBarItem(title: "Home", image: UIImage(named: "store"), tag: 0)
         
         let orderVC = OrderViewController()
@@ -31,21 +42,7 @@ class AppCoordinator {
         let tabBar = MainTabBarController()
         tabBar.viewControllers = [homeNav, orderNav, myListNav, profileNav]
         
-        window?.rootViewController = tabBar
-        window?.makeKeyAndVisible()
-        //        } else if UserDefaultsManager.shared.getBool(forKey: .isWatchedOnboarding) {
-        //            let signInUpViewController = SignInUpViewController()
-        //            navigationController = UINavigationController(rootViewController: signInUpViewController)
-        //            window?.rootViewController = navigationController
-        //            window?.makeKeyAndVisible()
-        //        } else {
-        //            let onboardingVC = FoodOnboardingViewController()
-        //            navigationController = UINavigationController(rootViewController: onboardingVC)
-        //            window?.rootViewController = navigationController
-        //            window?.makeKeyAndVisible()
-        //        }
-        //
-        //
-        //    }
+        window.rootViewController = tabBar
+        window.makeKeyAndVisible()
     }
 }

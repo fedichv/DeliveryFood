@@ -21,6 +21,7 @@ class AppCoordinator: Coordinator {
     var parent: Coordinator?
     
     private var window: UIWindow
+    
     init(window: UIWindow) {
         self.window = window
     }
@@ -31,16 +32,22 @@ class AppCoordinator: Coordinator {
             onboardingCoordinator.parent = self
             childCoordinators.append(onboardingCoordinator)
             onboardingCoordinator.start()
-//        } else if !UserDefaultsManager.shared.getBool(forKey: .isLoggedIn) {
-//            let signInUpCoordinator = SignInUpCoordinator(window: window)
-//            signInUpCoordinator.parent = self
-//            childCoordinators.append(signInUpCoordinator)
-//            signInUpCoordinator.start()
+        } else if !UserDefaultsManager.shared.getBool(forKey: .isLoggedIn) {
+            let signInUpCoordinator = SignInUpCoordinator(window: window)
+            signInUpCoordinator.parent = self
+            childCoordinators.append(signInUpCoordinator)
+            signInUpCoordinator.start()
         } else {
             let tabBar = TabBarCoordinator(window: window)
             tabBar.parent = self
             childCoordinators.append(tabBar)
             tabBar.start()
         }
+    }
+    func showMainTabBar() {
+        let tabBar = TabBarCoordinator(window: window)
+        tabBar.parent = self
+        childCoordinators.append(tabBar)
+        tabBar.start()
     }
 }

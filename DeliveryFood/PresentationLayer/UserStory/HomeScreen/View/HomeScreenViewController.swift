@@ -121,7 +121,7 @@ class HomeScreenViewController: UIViewController {
 
     private let collectionFoodCell: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
-        layout.itemSize = CGSize(width: 318, height: 130)
+        layout.itemSize = CGSize(width: 320, height: 130)
         layout.minimumLineSpacing = 20
         layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
 

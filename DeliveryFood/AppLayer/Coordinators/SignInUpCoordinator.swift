@@ -20,8 +20,17 @@ class SignInUpCoordinator: Coordinator {
     
     func start() {
         let signInUpViewController = SignInUpViewController()
-        uiNavigationController = UINavigationController(rootViewController: signInUpViewController)
-        window.rootViewController = uiNavigationController
+        let navigationController = UINavigationController(rootViewController: signInUpViewController)
+        self.uiNavigationController = navigationController
+        
+        let authCoordinator = AuthCoordinator(navigationController: navigationController)
+        authCoordinator.parent = self
+        childCoordinators.append(authCoordinator)
+
+        let viewModel = SignInUpViewModel(coordinator: authCoordinator)
+        signInUpViewController.viewModel = viewModel
+
+        window.rootViewController = navigationController
         window.makeKeyAndVisible()
     }
 }

@@ -10,8 +10,6 @@ import UIKit
 // MARK: - Constants
 extension AuthViewController {
     enum Constants {
-        static let signInTitle = "Sign In"
-        static let signUpTitle = "Sign Up"
         
         static let usernamePlaceholder = "Username"
         static let passwordPlaceholder = "Password"
@@ -40,14 +38,35 @@ extension AuthViewController {
 // MARK: - AuthMode
 
 enum AuthMode: String {
+    private enum Constants{
+        static let signInTitle = "Sign In"
+        static let signUpTitle = "Sign Up"
+    }
+    
     case signIn = "Sign In"
     case signUp = "Sign Up"
+    
+    var title: String {
+        switch self {
+        case .signIn:
+            return Constants.signInTitle
+        case .signUp:
+            return Constants.signUpTitle
+        }
+    }
 }
 
 // MARK: - Protocols
 
-protocol AutAuthViewOutput: AnyObject {
+protocol AuthViewInput: AnyObject {
+    
+}
+
+protocol AuthViewOutput: AnyObject {
     func didChangeSearchText(_ text: String)
+    func goTo(screen: AuthCoordinator.AuthCoordinatorScreen)
+    
+    func didTapAuthButton(with credentials: AuthCredentials, mode: AuthMode)
 }
 
 // MARK: - AuthViewController
@@ -56,7 +75,7 @@ final class AuthViewController: UIViewController {
     
     // MARK: - Properties
     
-    weak var viewModel: AutAuthViewOutput?
+    var viewModel: AuthViewOutput?
     private let authMode: AuthMode
     
     // MARK: - Init
@@ -75,7 +94,7 @@ final class AuthViewController: UIViewController {
     private let titleSignInOrSignUp: UILabel = {
         let title = UILabel()
         title.font = .systemFont(ofSize: Constants.titleFontSize, weight: .bold)
-        title.text = Constants.signInTitle
+//        title.text = Constants.signInTitle
         title.textColor = .black
         title.translatesAutoresizingMaskIntoConstraints = false
         return title
@@ -111,14 +130,15 @@ final class AuthViewController: UIViewController {
         return tf
     }()
     
-    private let signInOrSignUpButton: UIButton = {
+    private lazy var signInOrSignUpButton: UIButton = {
         let button = UIButton()
-        button.setTitle(Constants.signInTitle, for: .normal)
+//        button.setTitle(Constants.signInTitle, for: .normal)
         button.titleLabel?.font = .boldSystemFont(ofSize: Constants.buttonFontSize)
         button.setTitleColor(.white, for: .normal)
         button.backgroundColor = .tennéOrTawny
         button.layer.cornerRadius = Constants.cornerRadius
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.addTarget(self, action: #selector(handleAuthButtonTapped), for: .touchUpInside)
         return button
     }()
     
@@ -188,34 +208,20 @@ final class AuthViewController: UIViewController {
     }
     
     private func configureForAuthMode() {
-        switch authMode {
-        case .signIn:
-            titleSignInOrSignUp.text = Constants.signInTitle
-            signInOrSignUpButton.setTitle(Constants.signInTitle, for: .normal)
-            textFieldReEnterPassword.isHidden = true
-        case .signUp:
-            titleSignInOrSignUp.text = Constants.signUpTitle
-            signInOrSignUpButton.setTitle(Constants.signUpTitle, for: .normal)
-            textFieldReEnterPassword.isHidden = false
-        }
+        titleSignInOrSignUp.text = authMode.title
+        signInOrSignUpButton.setTitle(authMode.title, for: .normal)
+        textFieldReEnterPassword.isHidden = authMode == .signIn
     }
     
     // MARK: - Actions
     
     @objc private func handleAuthButtonTapped() {
-        switch authMode {
-        case .signIn:
-            // Переход к TabBarController
-            let tabBarVC = MainTabBarController()
-            tabBarVC.modalPresentationStyle = .fullScreen
-            present(tabBarVC, animated: true, completion: nil)
-
-        case .signUp:
-            // Переход к экрану входа
-            let signInVC = AuthViewController(authMode: .signIn)
-            signInVC.modalPresentationStyle = .fullScreen
-            present(signInVC, animated: true, completion: nil)
-        }
+        let credentials = AuthCredentials(
+            username: textFieldUsername.text ?? "",
+            password: textFieldPassword.text ?? "",
+            reenterPassword: textFieldReEnterPassword.text ?? ""
+        )
+        viewModel?.didTapAuthButton(with: credentials, mode: authMode)
     }
 }
 
@@ -230,4 +236,8 @@ extension AuthViewController: UITextFieldDelegate {
     func textFieldDidChangeSelection(_ textField: UITextField) {
         viewModel?.didChangeSearchText(textField.text ?? "")
     }
+}
+
+extension AuthViewController: AuthViewInput {
+    
 }

@@ -37,6 +37,8 @@ extension SignInUpViewController {
 
 final class SignInUpViewController: UIViewController {
 
+    
+    var viewModel: SignInUpViewModel!
     // MARK: - UI Elements
 
     private let imageSignInUpView: UIImageView = {
@@ -141,14 +143,11 @@ final class SignInUpViewController: UIViewController {
     }
 
     // MARK: - Actions
-
     @objc private func didTapSignIn() {
-        let authVC = AuthViewController(authMode: .signIn)
-        navigationController?.pushViewController(authVC, animated: true)
+        viewModel.didTapSignIn()
     }
 
     @objc private func didTapSignUp() {
-        let authVC = AuthViewController(authMode: .signUp)
-        navigationController?.pushViewController(authVC, animated: true)
+        viewModel.didTapSignUp()
     }
 }

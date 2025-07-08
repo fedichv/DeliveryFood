@@ -64,7 +64,7 @@ class HomeScreenViewController: UIViewController {
 
     weak var viewModel: HomeScreenViewOutput?
     private var collectionFoodCellHeightConstraint: NSLayoutConstraint?
-
+    
     // MARK: - Initializer
 
     init(viewModel: HomeScreenViewOutput? = nil) {
@@ -96,6 +96,7 @@ class HomeScreenViewController: UIViewController {
         layout.scrollDirection = .horizontal
         layout.itemSize = CGSize(width: 70, height: 91)
         layout.minimumLineSpacing = 40
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 0)
 
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .white
@@ -110,7 +111,7 @@ class HomeScreenViewController: UIViewController {
         layout.itemSize = CGSize(width: 130, height: 130)
         layout.minimumInteritemSpacing = 20
         layout.minimumLineSpacing = 20
-        layout.sectionInset = .zero
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 0) // 👈 добавлено
 
         let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
         collectionView.backgroundColor = .white
@@ -119,7 +120,7 @@ class HomeScreenViewController: UIViewController {
         return collectionView
     }()
 
-    private let collectionFoodCell: UICollectionView = {
+    private let collectionRestaurantCell: UICollectionView = {
         let layout = UICollectionViewFlowLayout()
         layout.itemSize = CGSize(width: 320, height: 130)
         layout.minimumLineSpacing = 20
@@ -207,8 +208,8 @@ class HomeScreenViewController: UIViewController {
 
     override func viewDidLayoutSubviews() {
         super.viewDidLayoutSubviews()
-        collectionFoodCell.layoutIfNeeded()
-        let height = collectionFoodCell.collectionViewLayout.collectionViewContentSize.height
+        collectionRestaurantCell.layoutIfNeeded()
+        let height = collectionRestaurantCell.collectionViewLayout.collectionViewContentSize.height
         collectionFoodCellHeightConstraint?.constant = height
     }
 
@@ -221,14 +222,15 @@ class HomeScreenViewController: UIViewController {
         collectionMenuSectionCell.register(MenuSectionCell.self, forCellWithReuseIdentifier: MenuSectionCell.reuseIdentifier)
         collectionMenuSectionCell.dataSource = self
         collectionMenuSectionCell.delegate = self
+        collectionMenuSectionCell.allowsSelection = true
 
-        collectionFoodMenuCell.register(FoodMenuCell.self, forCellWithReuseIdentifier: FoodMenuCell.reuseIdentifier)
+        collectionFoodMenuCell.register(SectionFoodCell.self, forCellWithReuseIdentifier: SectionFoodCell.reuseIdentifier)
         collectionFoodMenuCell.dataSource = self
         collectionFoodMenuCell.delegate = self
 
-        collectionFoodCell.register(FoodCell.self, forCellWithReuseIdentifier: FoodCell.reuseIdentifier)
-        collectionFoodCell.dataSource = self
-        collectionFoodCell.delegate = self
+        collectionRestaurantCell.register(RestaurantCell.self, forCellWithReuseIdentifier: RestaurantCell.reuseIdentifier)
+        collectionRestaurantCell.dataSource = self
+        collectionRestaurantCell.delegate = self
     }
 
     private func setupViews() {
@@ -243,7 +245,7 @@ class HomeScreenViewController: UIViewController {
         contentView.addSubview(collectionFoodMenuCell)
         contentView.addSubview(nearMeLabel)
         contentView.addSubview(nearMeViewAllLabel)
-        contentView.addSubview(collectionFoodCell)
+        contentView.addSubview(collectionRestaurantCell)
     }
 
     private func setupConstraints() {
@@ -273,7 +275,7 @@ class HomeScreenViewController: UIViewController {
             addressLabel.leadingAnchor.constraint(equalTo: pinImage.trailingAnchor, constant: 10),
 
             collectionMenuSectionCell.topAnchor.constraint(equalTo: addressLabel.bottomAnchor, constant: 30),
-            collectionMenuSectionCell.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            collectionMenuSectionCell.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             collectionMenuSectionCell.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             collectionMenuSectionCell.heightAnchor.constraint(equalToConstant: 91),
 
@@ -284,7 +286,7 @@ class HomeScreenViewController: UIViewController {
             foodMenuViewAllLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -30),
 
             collectionFoodMenuCell.topAnchor.constraint(equalTo: foodMenuLabel.bottomAnchor, constant: 26),
-            collectionFoodMenuCell.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 20),
+            collectionFoodMenuCell.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             collectionFoodMenuCell.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             collectionFoodMenuCell.heightAnchor.constraint(equalToConstant: 280),
 
@@ -294,12 +296,12 @@ class HomeScreenViewController: UIViewController {
             nearMeViewAllLabel.centerYAnchor.constraint(equalTo: nearMeLabel.centerYAnchor),
             nearMeViewAllLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -30),
 
-            collectionFoodCell.topAnchor.constraint(equalTo: nearMeLabel.bottomAnchor, constant: 26),
-            collectionFoodCell.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
-            collectionFoodCell.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
-            collectionFoodCell.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            collectionRestaurantCell.topAnchor.constraint(equalTo: nearMeLabel.bottomAnchor, constant: 26),
+            collectionRestaurantCell.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            collectionRestaurantCell.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            collectionRestaurantCell.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
         ])
-        collectionFoodCellHeightConstraint = collectionFoodCell.heightAnchor.constraint(equalToConstant: 430)
+        collectionFoodCellHeightConstraint = collectionRestaurantCell.heightAnchor.constraint(equalToConstant: 430)
         collectionFoodCellHeightConstraint?.isActive = true
     }
 }
@@ -312,7 +314,7 @@ extension HomeScreenViewController: UICollectionViewDataSource {
             return FoodConstants.foodItems.count
         } else if collectionView == self.collectionFoodMenuCell {
             return FoodConstants.foodMenuItems.count
-        } else if collectionView == self.collectionFoodCell {
+        } else if collectionView == self.collectionRestaurantCell {
             return 50
         }
         return 0
@@ -333,7 +335,7 @@ extension HomeScreenViewController: UICollectionViewDataSource {
             return cell
 
         } else if collectionView == self.collectionFoodMenuCell {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FoodMenuCell.reuseIdentifier, for: indexPath) as? FoodMenuCell else {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionFoodCell.reuseIdentifier, for: indexPath) as? SectionFoodCell else {
                 return UICollectionViewCell()
             }
 
@@ -357,7 +359,7 @@ extension HomeScreenViewController: UICollectionViewDataSource {
             return cell
 
         } else {
-            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FoodCell.reuseIdentifier, for: indexPath) as? FoodCell else {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RestaurantCell.reuseIdentifier, for: indexPath) as? RestaurantCell else {
                 return UICollectionViewCell()
             }
             return cell
@@ -368,7 +370,23 @@ extension HomeScreenViewController: UICollectionViewDataSource {
 // MARK: - UICollectionViewDelegate
 
 extension HomeScreenViewController: UICollectionViewDelegate {
-    // Additional delegate methods can go here
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if collectionView == collectionMenuSectionCell {
+            print("Нажата ячейка меню секции \(FoodConstants.foodItems[indexPath.item].title)")
+            let title = FoodConstants.foodItems[indexPath.item].title
+            let detailVC = RestaurantViewController(sectionTitle: title)
+            navigationController?.pushViewController(detailVC, animated: true)
+        } else if collectionView == collectionFoodMenuCell {
+            print("Нажата ячейка меню \(FoodConstants.foodMenuItems[indexPath.item].title)")
+            let title = FoodConstants.foodMenuItems[indexPath.item].title
+            let detailVC = RestaurantViewController(sectionTitle: title)
+            navigationController?.pushViewController(detailVC, animated: true)
+        } else if collectionView == collectionRestaurantCell {
+            print("нажата ячейка блюда \(indexPath.item)")
+            let detailVC = DishViewController()
+            navigationController?.pushViewController(detailVC, animated: true)
+        }
+    }
 }
 
 // MARK: - HomeScreenViewInput

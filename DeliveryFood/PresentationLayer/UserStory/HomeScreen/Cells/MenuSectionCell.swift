@@ -36,7 +36,7 @@ class MenuSectionCell: UICollectionViewCell {
         imageView.translatesAutoresizingMaskIntoConstraints = false
         return imageView
     }()
-
+    
     private let titleLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 12)
@@ -60,8 +60,9 @@ class MenuSectionCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews()
+        setupConstraints()
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -73,16 +74,18 @@ class MenuSectionCell: UICollectionViewCell {
         imageContainer.addSubview(imageView)
         verticalStack.addArrangedSubview(imageContainer)
         verticalStack.addArrangedSubview(titleLabel)
-        
+    }
+    
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             verticalStack.topAnchor.constraint(equalTo: contentView.topAnchor),
             verticalStack.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             verticalStack.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             verticalStack.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-
+            
             imageContainer.widthAnchor.constraint(equalToConstant: 70),
             imageContainer.heightAnchor.constraint(equalToConstant: 70),
-
+            
             imageView.centerXAnchor.constraint(equalTo: imageContainer.centerXAnchor),
             imageView.centerYAnchor.constraint(equalTo: imageContainer.centerYAnchor),
             imageView.widthAnchor.constraint(equalToConstant: 40),

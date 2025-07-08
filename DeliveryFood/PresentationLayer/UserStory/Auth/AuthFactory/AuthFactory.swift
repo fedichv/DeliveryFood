@@ -12,7 +12,7 @@ final class AuthFactory {
         
         let authVC = AuthViewController(authMode: mode)
         let viewModel = AuthViewModel(view: authVC, coordinator: coordinator)
-        authVC.viewModel = viewModel
+        authVC.output = viewModel
         
         return authVC
     }

@@ -16,7 +16,7 @@ struct FoodMenuCellModel {
 
 // MARK: - FoodMenuCell
 
-class FoodMenuCell: UICollectionViewCell {
+class SectionFoodCell: UICollectionViewCell {
     static let reuseIdentifier = "FoodMenuCell"
     
     // MARK: - UI Elements
@@ -30,7 +30,7 @@ class FoodMenuCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-
+    
     private let imageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFit
@@ -44,8 +44,9 @@ class FoodMenuCell: UICollectionViewCell {
     override init(frame: CGRect) {
         super.init(frame: frame)
         setupViews()
+        setupConstraints()
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -59,12 +60,14 @@ class FoodMenuCell: UICollectionViewCell {
         
         contentView.addSubview(titleLabel)
         contentView.addSubview(imageView)
-
+    }
+    
+    private func setupConstraints() {
         NSLayoutConstraint.activate([
             titleLabel.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 12),
             titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 12),
             titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: contentView.trailingAnchor, constant: -12),
-
+            
             imageView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
             imageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
             imageView.widthAnchor.constraint(equalToConstant: 110),

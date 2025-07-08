@@ -32,13 +32,13 @@ class AuthCoordinator: Coordinator {
         case .signIn:
             let signInVC = AuthViewController(authMode: .signIn)
             let viewModel = AuthViewModel(view: signInVC, coordinator: self)
-            signInVC.viewModel = viewModel
+            signInVC.output = viewModel
             uiNavigationController?.setViewControllers([signInVC], animated: true)
             
         case .signUp:
             let signUpVC = AuthViewController(authMode: .signUp)
             let viewModel = AuthViewModel(view: signUpVC, coordinator: self)
-            signUpVC.viewModel = viewModel
+            signUpVC.output = viewModel
             uiNavigationController?.setViewControllers([signUpVC], animated: true)
         case .home:
             guard let window = uiNavigationController?.view.window else { return }

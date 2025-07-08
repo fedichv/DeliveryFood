@@ -7,6 +7,10 @@
 
 import UIKit
 
+enum UserDefaultsKeys: String {
+    case isLoggedIn
+    case loginDate
+}
 
 struct ServerResponse: Codable {
     let success: Bool
@@ -72,6 +76,9 @@ class AuthViewModel: AuthViewOutput {
 
                         switch mode {
                         case .signIn:
+                            let now = Date()
+                            UserDefaultsManager.shared.set(true, forKey: .isLoggedIn)
+                            UserDefaults.standard.set(now, forKey: UserDefaultsKeys.loginDate.rawValue)
                             self.coordinator.open(screen: .home)
                         case .signUp:
                             self.coordinator.open(screen: .signIn)
@@ -89,6 +96,25 @@ class AuthViewModel: AuthViewOutput {
     }
     func goTo(screen: AuthCoordinator.AuthCoordinatorScreen) {
         coordinator.open(screen: screen)
+    }
+    
+    func checkIfUserIsLoggedIn() {
+        
+        if let lastLoginDate = UserDefaults.standard.object(forKey: "loginDate") as? Date {
+            let today = Date()
+            let daysPassed = Calendar.current.dateComponents([.day], from: lastLoginDate, to: today).day ?? 0
+            if daysPassed >= 7 {
+                UserDefaultsManager.shared.set(false, forKey: .isLoggedIn)
+                UserDefaults.standard.removeObject(forKey: "loginDate")
+            }
+        }
+        
+        
+        let isLoggedIn = UserDefaultsManager.shared.getBool(forKey: .isLoggedIn)
+        
+        if isLoggedIn {
+            coordinator.open(screen: .home)
+        }
     }
 }
 

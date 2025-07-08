@@ -65,7 +65,7 @@ protocol AuthViewInput: AnyObject {
 protocol AuthViewOutput: AnyObject {
     func didChangeSearchText(_ text: String)
     func goTo(screen: AuthCoordinator.AuthCoordinatorScreen)
-    
+    func checkIfUserIsLoggedIn()
     func didTapAuthButton(with credentials: AuthCredentials, mode: AuthMode)
 }
 
@@ -75,7 +75,7 @@ final class AuthViewController: UIViewController {
     
     // MARK: - Properties
     
-    var viewModel: AuthViewOutput?
+    var output: AuthViewOutput?
     private let authMode: AuthMode
     
     // MARK: - Init
@@ -169,6 +169,7 @@ final class AuthViewController: UIViewController {
         setupConstraints()
         configureForAuthMode()
         hideKeyboardWhenTappedAround()
+        output?.checkIfUserIsLoggedIn()
     }
     
     // MARK: - Setup Methods
@@ -221,7 +222,7 @@ final class AuthViewController: UIViewController {
             password: textFieldPassword.text ?? "",
             reenterPassword: textFieldReEnterPassword.text ?? ""
         )
-        viewModel?.didTapAuthButton(with: credentials, mode: authMode)
+        output?.didTapAuthButton(with: credentials, mode: authMode)
     }
 }
 
@@ -234,7 +235,7 @@ extension AuthViewController: UITextFieldDelegate {
     }
 
     func textFieldDidChangeSelection(_ textField: UITextField) {
-        viewModel?.didChangeSearchText(textField.text ?? "")
+        output?.didChangeSearchText(textField.text ?? "")
     }
 }
 

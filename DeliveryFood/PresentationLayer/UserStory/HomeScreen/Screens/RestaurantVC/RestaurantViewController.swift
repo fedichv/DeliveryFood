@@ -85,7 +85,7 @@ class RestaurantViewController: UIViewController {
             searchField.heightAnchor.constraint(equalToConstant: 50),
             
             collectionRestaurantCell.topAnchor.constraint(equalTo: searchField.bottomAnchor, constant: 20),
-            collectionRestaurantCell.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 0),
+            collectionRestaurantCell.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             collectionRestaurantCell.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: 0),
             collectionRestaurantCell.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])

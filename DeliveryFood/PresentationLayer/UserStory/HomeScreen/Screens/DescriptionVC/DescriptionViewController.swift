@@ -4,21 +4,32 @@
 //
 //  Created by Владимир Федичев on 6/19/25.
 //
+
 import UIKit
 
 protocol DescriptionViewControllerDelegate: AnyObject {
-    func didAddDishToOrder(_ dish: DishOrderModel)
+    func didUpdateLikeStatus(for dishID: String, isLiked: Bool, isDisliked: Bool)
 }
 
 class DescriptionViewController: UIViewController {
     
+    
     weak var delegate: DescriptionViewControllerDelegate?
+    var dishName: String = ""
+    var dishImage: UIImage?
+    var dishID: String = ""
+    var isLiked: Bool = false
+    var isDisliked: Bool = false
+    private var quantity: Int = 1
+    
+    // MARK: - UI Elements
     
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         return scrollView
     }()
+    
     private let contentView: UIView = {
         let view = UIView()
         view.translatesAutoresizingMaskIntoConstraints = false
@@ -32,14 +43,16 @@ class DescriptionViewController: UIViewController {
         imgView.translatesAutoresizingMaskIntoConstraints = false
         return imgView
     }()
+    
     private let imgLike: UIImageView = {
         let imgView = UIImageView()
-        imgView.image = UIImage(systemName: "hand.thumbsdown")
+        imgView.image = UIImage(systemName: "hand.thumbsup")
         imgView.contentMode = .scaleAspectFit
         imgView.tintColor = .darkGray
         imgView.translatesAutoresizingMaskIntoConstraints = false
         return imgView
     }()
+    
     private let likeCounter: UILabel = {
         let label = UILabel()
         label.text = "999+ |"
@@ -48,6 +61,7 @@ class DescriptionViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+    
     private let imgDisLike: UIImageView = {
         let imgView = UIImageView()
         imgView.image = UIImage(systemName: "hand.thumbsdown")
@@ -56,6 +70,7 @@ class DescriptionViewController: UIViewController {
         imgView.translatesAutoresizingMaskIntoConstraints = false
         return imgView
     }()
+    
     private let disLikeCounter: UILabel = {
         let label = UILabel()
         label.text = "93+ "
@@ -64,6 +79,7 @@ class DescriptionViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+    
     private let likeButton: UIButton = {
         let button = UIButton()
         let image = UIImage(systemName: "hand.thumbsup")
@@ -76,6 +92,7 @@ class DescriptionViewController: UIViewController {
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
+    
     private let disLikeButton: UIButton = {
         let button = UIButton()
         let image = UIImage(systemName: "hand.thumbsdown")
@@ -87,6 +104,7 @@ class DescriptionViewController: UIViewController {
         button.clipsToBounds = true
         return button
     }()
+    
     private let priceDish: UILabel = {
         let label = UILabel()
         label.text = "$99.99"
@@ -96,14 +114,16 @@ class DescriptionViewController: UIViewController {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+    
     private let descriptionDish: UILabel = {
         let label = UILabel()
-        label.text = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries"
+        label.text = "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s..."
         label.numberOfLines = 0
         label.font = UIFont.systemFont(ofSize: 13, weight: .medium)
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
+    
     private let addToOrderButton: UIButton = {
         let button = UIButton()
         button.setTitle("Add to Order", for: .normal)
@@ -150,8 +170,8 @@ class DescriptionViewController: UIViewController {
         label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
         label.textColor = .white
         label.textAlignment = .center
-        label.adjustsFontSizeToFitWidth = true       // масштабируем текст
-        label.minimumScaleFactor = 0.5               // минимальный масштаб
+        label.adjustsFontSizeToFitWidth = true
+        label.minimumScaleFactor = 0.5
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
@@ -164,14 +184,54 @@ class DescriptionViewController: UIViewController {
         return button
     }()
     
-    private var quantity: Int = 1
+    private let spacer: UIView = {
+        let spacer = UIView()
+        spacer.translatesAutoresizingMaskIntoConstraints = false
+        return spacer
+    }()
+    
+    // MARK: - Life Cycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         configure()
         setupViews()
         setupConstraints()
+
+        // Загружаем переданные данные
+        navigationItem.titleView = {
+            let label = UILabel()
+            label.text = dishName
+            label.font = UIFont.systemFont(ofSize: 16, weight: .bold)
+            label.textColor = .black
+            return label
+        }()
         
+        if let image = dishImage {
+            imgDish.image = image
+        }
+
+        // Сохраняем лайк/дизлайк из UserDefaults
+        let savedStatus = UserDefaultsManager.shared.getLikedStatus(forDishID: dishID)
+        isLiked = savedStatus.isLiked
+        isDisliked = savedStatus.isDisliked
+
+        if isLiked {
+            updateButtonStyle(selectedButton: likeButton, deselectedButton: disLikeButton)
+        } else if isDisliked {
+            updateButtonStyle(selectedButton: disLikeButton, deselectedButton: likeButton)
+        }
+        
+        let savedCount = UserDefaultsManager.shared.getOrderCount(forDishID: dishID)
+        if savedCount > 0 {
+            quantity = savedCount
+            quantityLabel.text = "\(quantity)"
+            addToOrderButton.setTitle("", for: .normal)
+            addedToCartLabel.isHidden = false
+            buttonQuantityStack.isHidden = false
+        }
+        
+        // Привязываем действия к кнопкам
         likeButton.addTarget(self, action: #selector(likeButtonTapped), for: .touchUpInside)
         disLikeButton.addTarget(self, action: #selector(disLikeButtonTapped), for: .touchUpInside)
         addToOrderButton.addTarget(self, action: #selector(addToOrderTapped), for: .touchUpInside)
@@ -179,12 +239,13 @@ class DescriptionViewController: UIViewController {
         minusButton.addTarget(self, action: #selector(decreaseQuantity), for: .touchUpInside)
     }
     
+    // MARK: - UI Setup
+    
     private func configure() {
-        super.viewDidLoad()
         view.backgroundColor = .white
         
         let titleLabel = UILabel()
-        titleLabel.text = "Название блюда"
+        titleLabel.text = "Название блюда"  // Здесь можно динамически вставлять название блюда
         titleLabel.font = UIFont.systemFont(ofSize: 16, weight: .bold)
         titleLabel.textColor = .black
         navigationItem.titleView = titleLabel
@@ -193,6 +254,7 @@ class DescriptionViewController: UIViewController {
     private func setupViews() {
         view.addSubview(scrollView)
         scrollView.addSubview(contentView)
+        
         contentView.addSubview(imgDish)
         contentView.addSubview(imgLike)
         contentView.addSubview(likeCounter)
@@ -202,7 +264,9 @@ class DescriptionViewController: UIViewController {
         contentView.addSubview(disLikeButton)
         contentView.addSubview(priceDish)
         contentView.addSubview(descriptionDish)
-        contentView.addSubview(addToOrderButton)
+        contentView.addSubview(spacer)
+        
+        view.addSubview(addToOrderButton)
         addToOrderButton.addSubview(addedToCartLabel)
         
         buttonQuantityStack.addArrangedSubview(minusButton)
@@ -214,7 +278,7 @@ class DescriptionViewController: UIViewController {
     private func setupConstraints() {
         NSLayoutConstraint.activate([
             scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             
@@ -229,7 +293,6 @@ class DescriptionViewController: UIViewController {
             imgDish.widthAnchor.constraint(equalToConstant: 322),
             imgDish.heightAnchor.constraint(equalToConstant: 322),
             
-            // Лайк
             imgLike.topAnchor.constraint(equalTo: imgDish.bottomAnchor, constant: 19),
             imgLike.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 50),
             imgLike.widthAnchor.constraint(equalToConstant: 15),
@@ -238,7 +301,6 @@ class DescriptionViewController: UIViewController {
             likeCounter.centerYAnchor.constraint(equalTo: imgLike.centerYAnchor),
             likeCounter.leadingAnchor.constraint(equalTo: imgLike.trailingAnchor, constant: 6),
             
-            // Дизлайк
             imgDisLike.centerYAnchor.constraint(equalTo: imgLike.centerYAnchor),
             imgDisLike.leadingAnchor.constraint(equalTo: likeCounter.trailingAnchor, constant: 6),
             imgDisLike.widthAnchor.constraint(equalToConstant: 15),
@@ -247,11 +309,9 @@ class DescriptionViewController: UIViewController {
             disLikeCounter.centerYAnchor.constraint(equalTo: imgDisLike.centerYAnchor),
             disLikeCounter.leadingAnchor.constraint(equalTo: imgDisLike.trailingAnchor, constant: 6),
             
-            // Цена
             priceDish.topAnchor.constraint(equalTo: imgLike.bottomAnchor, constant: 14),
             priceDish.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 50),
             
-            // Кнопки лайков справа
             likeButton.topAnchor.constraint(equalTo: imgDish.bottomAnchor, constant: 15),
             likeButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -50),
             likeButton.widthAnchor.constraint(equalToConstant: 30),
@@ -262,17 +322,14 @@ class DescriptionViewController: UIViewController {
             disLikeButton.widthAnchor.constraint(equalToConstant: 30),
             disLikeButton.heightAnchor.constraint(equalToConstant: 30),
             
-            // Описание
             descriptionDish.topAnchor.constraint(equalTo: priceDish.bottomAnchor, constant: 20),
             descriptionDish.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 50),
             descriptionDish.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -50),
             
-            // Кнопка "Add to Order"
-            addToOrderButton.topAnchor.constraint(equalTo: descriptionDish.bottomAnchor, constant: 19),
-            addToOrderButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            addToOrderButton.widthAnchor.constraint(equalToConstant: 354),
+            addToOrderButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            addToOrderButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            addToOrderButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -10),
             addToOrderButton.heightAnchor.constraint(equalToConstant: 50),
-            addToOrderButton.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -10),
             
             addedToCartLabel.leadingAnchor.constraint(equalTo: addToOrderButton.leadingAnchor, constant: 16),
             addedToCartLabel.centerYAnchor.constraint(equalTo: addToOrderButton.centerYAnchor),
@@ -281,8 +338,15 @@ class DescriptionViewController: UIViewController {
             buttonQuantityStack.centerYAnchor.constraint(equalTo: addToOrderButton.centerYAnchor),
             buttonQuantityStack.widthAnchor.constraint(equalToConstant: 90),
             
+            spacer.topAnchor.constraint(equalTo: descriptionDish.bottomAnchor),
+            spacer.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            spacer.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            spacer.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+            spacer.heightAnchor.constraint(equalToConstant: 100)
         ])
     }
+    
+    // MARK: - UI Updates
     
     private func updateButtonStyle(selectedButton: UIButton, deselectedButton: UIButton) {
         UIView.animate(withDuration: 0.2) {
@@ -294,54 +358,99 @@ class DescriptionViewController: UIViewController {
         }
     }
     
-    @objc private func likeButtonTapped() {
-        updateButtonStyle(selectedButton: likeButton, deselectedButton: disLikeButton)
+    private func updateButtonStyleNeutral(button: UIButton) {
+        UIView.animate(withDuration: 0.2) {
+            button.backgroundColor = .brightGray
+            button.tintColor = .darkGray
+        }
     }
     
+    private func resetAddToOrderButton() {
+        addToOrderButton.setTitle("Add to Order", for: .normal)
+        addedToCartLabel.isHidden = true
+        buttonQuantityStack.isHidden = true
+        quantity = 0
+    }
+    
+    // MARK: - Actions
+    @objc private func likeButtonTapped() {
+        isLiked.toggle()
+        if isLiked { isDisliked = false }
+
+        if isLiked {
+            updateButtonStyle(selectedButton: likeButton, deselectedButton: disLikeButton)
+        } else {
+            updateButtonStyleNeutral(button: likeButton)
+        }
+
+        UserDefaultsManager.shared.setLikedStatus(isLiked: isLiked, isDisliked: isDisliked, forDishID: dishID)
+        CartManager.shared.updateLikeStatus(for: dishID, isLiked: isLiked, isDisliked: isDisliked) // <-- по ID
+        delegate?.didUpdateLikeStatus(for: dishID, isLiked: isLiked, isDisliked: isDisliked)
+    }
+
     @objc private func disLikeButtonTapped() {
-        updateButtonStyle(selectedButton: disLikeButton, deselectedButton: likeButton)
+        isDisliked.toggle()
+        if isDisliked { isLiked = false }
+
+        if isDisliked {
+            updateButtonStyle(selectedButton: disLikeButton, deselectedButton: likeButton)
+        } else {
+            updateButtonStyleNeutral(button: disLikeButton)
+        }
+
+        UserDefaultsManager.shared.setLikedStatus(isLiked: isLiked, isDisliked: isDisliked, forDishID: dishID)
+        CartManager.shared.updateLikeStatus(for: dishID, isLiked: isLiked, isDisliked: isDisliked) // <-- по ID
+        delegate?.didUpdateLikeStatus(for: dishID, isLiked: isLiked, isDisliked: isDisliked)
     }
     
     @objc private func addToOrderTapped() {
+        quantity = 1
+        quantityLabel.text = "\(quantity)"
         addToOrderButton.setTitle("", for: .normal)
         addedToCartLabel.isHidden = false
         buttonQuantityStack.isHidden = false
-        quantity = 1
-        quantityLabel.text = "\(quantity)"
 
-        // Пример добавляемой информации
-        let dish = DishOrderModel(
-            name: "Название блюда",  // можешь заменить на реальное имя, если оно есть
-            price: 99.99,            // заменить на актуальную цену
-            quantity: quantity
+        UserDefaultsManager.shared.setOrderCount(quantity, forDishID: dishID)
+
+        let likesCount = Int(likeCounter.text?.replacingOccurrences(of: "+ |", with: "") ?? "0") ?? 0
+        let dislikesCount = Int(disLikeCounter.text?.replacingOccurrences(of: "+", with: "") ?? "0") ?? 0
+
+        let dish = OrderDishModel(
+            id: dishID,
+            name: dishName,
+            price: 99.99,
+            quantity: quantity,
+            imageData: imgDish.image?.jpegData(compressionQuality: 0.9),
+            likes: likesCount,
+            dislikes: dislikesCount,
+            isLiked: isLiked,
+            isDisliked: isDisliked
         )
-        
-        delegate?.didAddDishToOrder(dish)
+
+        CartManager.shared.addDish(dish)
     }
     
     @objc private func increaseQuantity() {
         if quantity < 99 {
             quantity += 1
             quantityLabel.text = "\(quantity)"
+            UserDefaultsManager.shared.setOrderCount(quantity, forDishID: dishID)
+            CartManager.shared.updateQuantity(for: dishID, quantity: quantity)  // <-- по ID
         }
     }
-    
+
     @objc private func decreaseQuantity() {
         if quantity > 1 {
             quantity -= 1
             quantityLabel.text = "\(quantity)"
+            UserDefaultsManager.shared.setOrderCount(quantity, forDishID: dishID)
+            CartManager.shared.updateQuantity(for: dishID, quantity: quantity)  // <-- по ID
         } else if quantity == 1 {
-            // Если количество дошло до 1 и нажали "-", сбрасываем в исходное состояние (удаляем из корзины)
             quantity = 0
             quantityLabel.text = "0"
             resetAddToOrderButton()
+            UserDefaultsManager.shared.setOrderCount(quantity, forDishID: dishID)
+            CartManager.shared.updateQuantity(for: dishID, quantity: quantity)  // <-- по ID
         }
-    }
-    
-    private func resetAddToOrderButton() {
-        addToOrderButton.setTitle("Add to Order", for: .normal) // Показываем исходный текст кнопки
-        addedToCartLabel.isHidden = true                        // Скрываем "Добавлено в заказ"
-        buttonQuantityStack.isHidden = true                     // Скрываем счетчик с кнопками
-        quantity = 0
     }
 }

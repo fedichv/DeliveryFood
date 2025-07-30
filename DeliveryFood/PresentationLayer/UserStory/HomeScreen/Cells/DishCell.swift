@@ -9,9 +9,12 @@ import UIKit
 // MARK: - Model
 
 struct DishCellModel {
+    let id: String
     let title: String
     let imageName: UIImage
     let price: String
+    var isLiked: Bool = false
+    var isDisliked: Bool = false
 }
 
 // MARK: - FoodCell
@@ -72,28 +75,28 @@ class DishCell: UICollectionViewCell {
         label.translatesAutoresizingMaskIntoConstraints = false
         return label
     }()
-    private let likeButton: UIButton = {
-        let button = UIButton()
-        let image = UIImage(systemName: "hand.thumbsup")
-        button.setImage(image, for: .normal)
-        button.tintColor = .darkGray
-        button.backgroundColor = .brightGray
-        button.layer.cornerRadius = 9
-        button.clipsToBounds = true
-        button.imageView?.contentMode = .scaleAspectFit
-        button.translatesAutoresizingMaskIntoConstraints = false
-        return button
+    private let likeImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "hand.thumbsup")
+        imageView.tintColor = .darkGray
+        imageView.backgroundColor = .brightGray
+        imageView.layer.cornerRadius = 9
+        imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
     }()
-    private let disLikeButton: UIButton = {
-        let button = UIButton()
-        let image = UIImage(systemName: "hand.thumbsdown")
-        button.setImage(image, for: .normal)
-        button.tintColor = .darkGray
-        button.backgroundColor = .brightGray
-        button.layer.cornerRadius = 9
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.clipsToBounds = true
-        return button
+
+    private let disLikeImageView: UIImageView = {
+        let imageView = UIImageView()
+        imageView.image = UIImage(systemName: "hand.thumbsdown")
+        imageView.tintColor = .darkGray
+        imageView.backgroundColor = .brightGray
+        imageView.layer.cornerRadius = 9
+        imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFit
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        return imageView
     }()
     private let priceDish: UILabel = {
         let label = UILabel()
@@ -124,8 +127,8 @@ class DishCell: UICollectionViewCell {
         contentView.addSubview(likeCounter)
         contentView.addSubview(disLikeCounter)
         contentView.addSubview(priceDish)
-        contentView.addSubview(likeButton)
-        contentView.addSubview(disLikeButton)
+        contentView.addSubview(likeImageView)
+        contentView.addSubview(disLikeImageView)
     }
 
     private func setupConstraints() {
@@ -148,24 +151,40 @@ class DishCell: UICollectionViewCell {
             priceDish.topAnchor.constraint(equalTo: likeCounter.bottomAnchor, constant: 8),
             priceDish.leadingAnchor.constraint(equalTo: foodImageView.trailingAnchor, constant: 20),
 
-            // Лайк кнопка — прибита к правому краю
-            likeButton.centerYAnchor.constraint(equalTo: likeCounter.centerYAnchor),
-            likeButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
-            likeButton.widthAnchor.constraint(equalToConstant: 18),
-            likeButton.heightAnchor.constraint(equalToConstant: 18),
+            likeImageView.centerYAnchor.constraint(equalTo: likeCounter.centerYAnchor),
+            likeImageView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -12),
+            likeImageView.widthAnchor.constraint(equalToConstant: 25),
+            likeImageView.heightAnchor.constraint(equalToConstant: 25),
 
-            // Дизлайк кнопка — слева от лайка с небольшим отступом
-            disLikeButton.centerYAnchor.constraint(equalTo: likeButton.centerYAnchor),
-            disLikeButton.trailingAnchor.constraint(equalTo: likeButton.leadingAnchor, constant: -12),
-            disLikeButton.widthAnchor.constraint(equalToConstant: 18),
-            disLikeButton.heightAnchor.constraint(equalToConstant: 18),
+            disLikeImageView.centerYAnchor.constraint(equalTo: likeImageView.centerYAnchor),
+            disLikeImageView.trailingAnchor.constraint(equalTo: likeImageView.leadingAnchor, constant: -12),
+            disLikeImageView.widthAnchor.constraint(equalToConstant: 25),
+            disLikeImageView.heightAnchor.constraint(equalToConstant: 25),
         ])
     }
     
     // MARK: - Configuration
     
-    func configure(with model: FoodCellModel) {
+    func configure(with model: DishCellModel) {
         foodImageView.image = model.imageName
         restarauntNameLabel.text = model.title
+    }
+    
+    func setLikeStatus(isLiked: Bool, isDisliked: Bool) {
+        if isLiked {
+            likeImageView.tintColor = .white
+            likeImageView.backgroundColor = .tennéOrTawny
+        } else {
+            likeImageView.tintColor = .darkGray
+            likeImageView.backgroundColor = .brightGray
+        }
+        
+        if isDisliked {
+            disLikeImageView.tintColor = .white
+            disLikeImageView.backgroundColor = .tennéOrTawny
+        } else {
+            disLikeImageView.tintColor = .darkGray
+            disLikeImageView.backgroundColor = .brightGray
+        }
     }
 }

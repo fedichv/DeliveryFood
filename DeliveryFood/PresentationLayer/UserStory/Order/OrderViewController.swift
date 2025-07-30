@@ -4,18 +4,22 @@
 //
 //  Created by Владимир Федичев on 5/1/25.
 //
-
 import UIKit
 
 class OrderViewController: UIViewController {
     
-    private var orders: [DishOrderModel] = []
+    private var orders: [OrderDishModel] = []
     
-    private let tableView: UITableView = {
-        let table = UITableView()
-        table.translatesAutoresizingMaskIntoConstraints = false
-        table.register(UITableViewCell.self, forCellReuseIdentifier: "OrderCell")
-        return table
+    private let dishCollection: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.itemSize = CGSize(width: 352, height: 80)
+        layout.minimumLineSpacing = 20
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
+        
+        let collectionView = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        collectionView.backgroundColor = .white
+        collectionView.translatesAutoresizingMaskIntoConstraints = false
+        return collectionView
     }()
     
     override func viewDidLoad() {
@@ -24,62 +28,59 @@ class OrderViewController: UIViewController {
         configure()
         setupViews()
         setupConstraints()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(cartDidUpdate), name: .cartUpdated, object: nil)
+        
+        // Инициализация данных
+        orders = CartManager.shared.items
     }
     
     private func configure() {
         title = "Your Order"
-        tableView.dataSource = self
-        tableView.delegate = self
+        dishCollection.dataSource = self
+        dishCollection.delegate = self
+        
+        dishCollection.register(OrderCellDish.self, forCellWithReuseIdentifier: "OrderCellDish")
     }
     
     private func setupViews() {
-        view.addSubview(tableView)
+        view.addSubview(dishCollection)
     }
     
     private func setupConstraints() {
         NSLayoutConstraint.activate([
-            tableView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            dishCollection.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            dishCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            dishCollection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            dishCollection.bottomAnchor.constraint(equalTo: view.bottomAnchor),
         ])
     }
     
-    func addDishToOrder(_ dish: DishOrderModel) {
-        // Проверка, есть ли уже такое блюдо
-        if let index = orders.firstIndex(where: { $0.name == dish.name }) {
-            let existing = orders[index]
-            orders[index] = DishOrderModel(name: existing.name, price: existing.price, quantity: existing.quantity + dish.quantity)
-        } else {
-            orders.append(dish)
-        }
-        tableView.reloadData()
+    @objc private func cartDidUpdate() {
+        orders = CartManager.shared.items
+        dishCollection.reloadData()
     }
+    
+    // UICollectionViewDataSource и Delegate остаются без изменений
 }
 
-// MARK: - UITableViewDataSource
+// MARK: - UICollectionViewDataSource
 
-extension OrderViewController: UITableViewDataSource, UITableViewDelegate {
+extension OrderViewController: UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
     
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         return orders.count
     }
     
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "OrderCellDish", for: indexPath) as? OrderCellDish else {
+            return UICollectionViewCell()
+        }
+        
         let order = orders[indexPath.row]
-        let cell = tableView.dequeueReusableCell(withIdentifier: "OrderCell", for: indexPath)
-
-        let total = order.price * Double(order.quantity)
-        cell.textLabel?.numberOfLines = 2
-        cell.textLabel?.text = "\(order.name)\nQty: \(order.quantity) • Total: $\(String(format: "%.2f", total))"
-
+        cell.configure(with: order)
+        
         return cell
     }
 }
 
-extension OrderViewController: DescriptionViewControllerDelegate {
-    func didAddDishToOrder(_ dish: DishOrderModel) {
-        addDishToOrder(dish)
-    }
-}

@@ -1,10 +1,3 @@
-//
-//  Untitled.swift
-//  DeliveryFood
-//
-//  Created by Владимир Федичев on 4/25/25.
-//
-
 import Foundation
 
 final class UserDefaultsManager {
@@ -13,11 +6,12 @@ final class UserDefaultsManager {
     
     private init() {}
     
-    enum Key: String {
+    enum Key: String, CaseIterable {
         case username
         case isWatchedOnboarding
         case isLoggedIn
-//        case launchCount
+        case likedDishes       // Словарь [dishID: [isLiked: Bool, isDisliked: Bool]]
+        case orderCounts       // Словарь [dishID: Int]
     }
     
     // MARK: - Строки
@@ -58,7 +52,33 @@ final class UserDefaultsManager {
             defaults.removeObject(forKey: key.rawValue)
         }
     }
-}
+    
+    // MARK: - Лайки и дизлайки по dishID
+    
+    func setLikedStatus(isLiked: Bool, isDisliked: Bool, forDishID dishID: String) {
+        var statusDict = defaults.dictionary(forKey: Key.likedDishes.rawValue) as? [String: [String: Bool]] ?? [:]
+        statusDict[dishID] = ["isLiked": isLiked, "isDisliked": isDisliked]
+        defaults.set(statusDict, forKey: Key.likedDishes.rawValue)
+    }
 
-// Расширение для получения всех кейсов enum
-extension UserDefaultsManager.Key: CaseIterable {}
+    func getLikedStatus(forDishID dishID: String) -> (isLiked: Bool, isDisliked: Bool) {
+        let statusDict = defaults.dictionary(forKey: Key.likedDishes.rawValue) as? [String: [String: Bool]] ?? [:]
+        let status = statusDict[dishID] ?? [:]
+        return (status["isLiked"] ?? false, status["isDisliked"] ?? false)
+    }
+    
+    // MARK: - Количество заказов по dishID
+    
+    /// Сохраняет количество заказа блюда по уникальному dishID
+    func setOrderCount(_ count: Int, forDishID dishID: String) {
+        var counts = defaults.dictionary(forKey: Key.orderCounts.rawValue) as? [String: Int] ?? [:]
+        counts[dishID] = count
+        defaults.set(counts, forKey: Key.orderCounts.rawValue)
+    }
+    
+    /// Получает количество заказа блюда по уникальному dishID
+    func getOrderCount(forDishID dishID: String) -> Int {
+        let counts = defaults.dictionary(forKey: Key.orderCounts.rawValue) as? [String: Int] ?? [:]
+        return counts[dishID] ?? 0
+    }
+}

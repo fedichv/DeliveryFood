@@ -18,4 +18,9 @@ extension UIViewController {
     @objc private func dismissKeyboard() {
         view.endEditing(true)
     }
+    
+}
+
+extension Notification.Name {
+    static let didUpdateCart = Notification.Name("didUpdateCart")
 }

@@ -5,7 +5,7 @@ class DishViewController: UIViewController {
     // Массив блюд с уникальным ID
     private var dishes: [DishCellModel] = (0..<50).map { index in
         DishCellModel(
-            id: "dish_\(index)" /*UUID().uuidString*/,
+            id: "dish_\(index)",
             title: "Dish Title \(index + 1)",
             imageName: UIImage(named: "dishImg") ?? UIImage(),
             price: "$99.99",

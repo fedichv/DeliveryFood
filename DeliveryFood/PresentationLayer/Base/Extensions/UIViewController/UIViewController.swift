@@ -24,3 +24,9 @@ extension UIViewController {
 extension Notification.Name {
     static let didUpdateCart = Notification.Name("didUpdateCart")
 }
+
+extension UIView {
+    func superview<T: UIView>(of type: T.Type) -> T? {
+        return superview as? T ?? superview?.superview(of: T.self)
+    }
+}

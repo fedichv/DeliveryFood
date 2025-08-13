@@ -4,6 +4,7 @@
 //
 //  Created by Владимир Федичев on 5/1/25.
 //
+
 import UIKit
 
 class OrderViewController: UIViewController {
@@ -22,6 +23,17 @@ class OrderViewController: UIViewController {
         return collectionView
     }()
     
+    private let sendButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.setTitle("Send", for: .normal)
+        button.setTitleColor(.white, for: .normal)
+        button.backgroundColor = .tennéOrTawny
+        button.layer.cornerRadius = 25
+        button.titleLabel?.font = .boldSystemFont(ofSize: 16)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        return button
+    }()
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
@@ -31,20 +43,21 @@ class OrderViewController: UIViewController {
         
         NotificationCenter.default.addObserver(self, selector: #selector(cartDidUpdate), name: .cartUpdated, object: nil)
         
-        // Инициализация данных
         orders = CartManager.shared.items
+        
+        sendButton.addTarget(self, action: #selector(sendButtonTapped), for: .touchUpInside)
     }
     
     private func configure() {
-        title = "Your Order"
+        title = "Review Food"
         dishCollection.dataSource = self
         dishCollection.delegate = self
-        
         dishCollection.register(OrderCellDish.self, forCellWithReuseIdentifier: "OrderCellDish")
     }
     
     private func setupViews() {
         view.addSubview(dishCollection)
+        view.addSubview(sendButton)
     }
     
     private func setupConstraints() {
@@ -52,7 +65,12 @@ class OrderViewController: UIViewController {
             dishCollection.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             dishCollection.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             dishCollection.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            dishCollection.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            dishCollection.bottomAnchor.constraint(equalTo: sendButton.topAnchor, constant: -16),
+            
+            sendButton.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 30),
+            sendButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -30),
+            sendButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            sendButton.heightAnchor.constraint(equalToConstant: 50)
         ])
     }
     
@@ -61,7 +79,22 @@ class OrderViewController: UIViewController {
         dishCollection.reloadData()
     }
     
-    // UICollectionViewDataSource и Delegate остаются без изменений
+    @objc private func sendButtonTapped() {
+        print("Send button tapped")
+        
+    }
+    
+    @objc private func deleteDish(_ sender: UIButton) {
+        guard let cell = sender.superview(of: OrderCellDish.self),
+              let indexPath = dishCollection.indexPath(for: cell) else { return }
+
+        dishCollection.performBatchUpdates {
+            dishCollection.deleteItems(at: [indexPath])
+            
+            let removedDish = orders.remove(at: indexPath.item)
+            CartManager.shared.remove(item: removedDish)
+        }
+    }
 }
 
 // MARK: - UICollectionViewDataSource
@@ -76,11 +109,11 @@ extension OrderViewController: UICollectionViewDataSource, UICollectionViewDeleg
         guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "OrderCellDish", for: indexPath) as? OrderCellDish else {
             return UICollectionViewCell()
         }
-        
+
         let order = orders[indexPath.row]
         cell.configure(with: order)
-        
+        cell.setDeleteAction(target: self, action: #selector(deleteDish(_:)))
+
         return cell
     }
 }
-

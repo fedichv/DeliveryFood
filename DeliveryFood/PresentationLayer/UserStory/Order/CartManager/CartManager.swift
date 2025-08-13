@@ -75,6 +75,11 @@ final class CartManager {
         }
     }
     
+    func remove(item: OrderDishModel) {
+        items.removeAll { $0.id == item.id }
+        NotificationCenter.default.post(name: .cartUpdated, object: nil)
+    }
+    
     // MARK: - Обновление UI
     private func notifyUpdate() {
         if Thread.isMainThread {

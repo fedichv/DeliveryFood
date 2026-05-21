@@ -1,0 +1,356 @@
+import UIKit
+
+// MARK: - Protocols
+
+protocol HomeScreenViewOutput: AnyObject {
+    func didChangeSearchText(_ text: String)
+}
+
+protocol HomeScreenViewInput: AnyObject {
+    func didTextChange(_ text: String)
+}
+
+// MARK: - Models
+
+enum CellColorType {
+    case blue, pink
+    var color: UIColor {
+        switch self {
+        case .blue: return .lightBlue
+        case .pink: return .lightPink
+        }
+    }
+}
+
+struct FoodItemModel {
+    let title: String
+    let imageName: String
+}
+
+struct FoodConstants {
+    static let foodItems: [FoodItemModel] = [
+        FoodItemModel(title: "Drink",  imageName: "drink"),
+        FoodItemModel(title: "Food",   imageName: "food"),
+        FoodItemModel(title: "Cake",   imageName: "cake"),
+        FoodItemModel(title: "Snack",  imageName: "snack")
+    ]
+    static let foodMenuItems: [FoodItemModel] = [
+        FoodItemModel(title: "Burgers", imageName: "burgerImg"),
+        FoodItemModel(title: "Fruit",   imageName: "fruitImg"),
+        FoodItemModel(title: "Pizza",   imageName: "pizzaImg"),
+        FoodItemModel(title: "Sushi",   imageName: "sushiImg"),
+        FoodItemModel(title: "BBQ",     imageName: "bbqImg"),
+        FoodItemModel(title: "Noodle",  imageName: "soupImg")
+    ]
+}
+
+// MARK: - HomeScreenViewController
+
+class HomeScreenViewController: UIViewController {
+
+    // MARK: - Properties
+
+    weak var viewModel: HomeScreenViewOutput?
+    private var collectionFoodCellHeightConstraint: NSLayoutConstraint?
+
+    // MARK: - Init
+
+    init(viewModel: HomeScreenViewOutput? = nil) {
+        super.init(nibName: nil, bundle: nil)
+        self.viewModel = viewModel
+    }
+
+    required init?(coder: NSCoder) { fatalError() }
+
+    // MARK: - UI Elements
+
+    private let scrollView: UIScrollView = {
+        let scroll = UIScrollView()
+        scroll.translatesAutoresizingMaskIntoConstraints = false
+        scroll.showsVerticalScrollIndicator = true
+        return scroll
+    }()
+
+    private let contentView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        return view
+    }()
+
+    private let collectionMenuSectionCell: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.itemSize = CGSize(width: 70, height: 91)
+        layout.minimumLineSpacing = 40
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 0)
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.backgroundColor = .white
+        cv.translatesAutoresizingMaskIntoConstraints = false
+        cv.showsHorizontalScrollIndicator = false
+        return cv
+    }()
+
+    private let collectionFoodMenuCell: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.scrollDirection = .horizontal
+        layout.itemSize = CGSize(width: 130, height: 130)
+        layout.minimumInteritemSpacing = 20
+        layout.minimumLineSpacing = 20
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 20, bottom: 0, right: 0)
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.backgroundColor = .white
+        cv.translatesAutoresizingMaskIntoConstraints = false
+        cv.showsHorizontalScrollIndicator = false
+        return cv
+    }()
+
+    private let collectionRestaurantCell: UICollectionView = {
+        let layout = UICollectionViewFlowLayout()
+        layout.itemSize = CGSize(width: 320, height: 130)
+        layout.minimumLineSpacing = 20
+        layout.sectionInset = UIEdgeInsets(top: 0, left: 0, bottom: 20, right: 0)
+        let cv = UICollectionView(frame: .zero, collectionViewLayout: layout)
+        cv.backgroundColor = .white
+        cv.translatesAutoresizingMaskIntoConstraints = false
+        cv.showsHorizontalScrollIndicator = false
+        cv.isScrollEnabled = false
+        return cv
+    }()
+
+    private let searchField: UITextField = {
+        let tf = PaddedTextField()
+        tf.placeholder = "Search"
+        tf.textColor = .darkGray
+        tf.layer.cornerRadius = 25
+        tf.backgroundColor = .brightGray
+        tf.translatesAutoresizingMaskIntoConstraints = false
+        return tf
+    }()
+
+    private let pinImage: UIImageView = {
+        let iv = UIImageView()
+        iv.image = UIImage(named: "pin")
+        iv.translatesAutoresizingMaskIntoConstraints = false
+        return iv
+    }()
+
+    private let addressLabel: UILabel = {
+        let label = UILabel()
+        label.text = "9 West 46 Th Street, New York City"
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
+    private let foodMenuLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Food Menu"
+        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
+    private let nearMeLabel: UILabel = {
+        let label = UILabel()
+        label.text = "Near Me"
+        label.font = UIFont.systemFont(ofSize: 18, weight: .bold)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
+    private let foodMenuViewAllLabel: UILabel = {
+        let label = UILabel()
+        label.text = "View All"
+        label.textColor = .darkGray
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
+    private let nearMeViewAllLabel: UILabel = {
+        let label = UILabel()
+        label.text = "View All"
+        label.textColor = .darkGray
+        label.font = UIFont.systemFont(ofSize: 12)
+        label.translatesAutoresizingMaskIntoConstraints = false
+        return label
+    }()
+
+    // MARK: - Lifecycle
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        configure()
+        setupViews()
+        setupConstraints()
+        hideKeyboardWhenTappedAround()
+
+        collectionMenuSectionCell.accessibilityIdentifier = "categoryCollection"
+        collectionFoodMenuCell.accessibilityIdentifier = "foodMenuCollection"
+        collectionRestaurantCell.accessibilityIdentifier = "restaurantCollection"
+        searchField.accessibilityIdentifier = "searchField"
+    }
+
+    override func viewDidLayoutSubviews() {
+        super.viewDidLayoutSubviews()
+        collectionRestaurantCell.layoutIfNeeded()
+        let height = collectionRestaurantCell.collectionViewLayout.collectionViewContentSize.height
+        collectionFoodCellHeightConstraint?.constant = height
+    }
+
+    // MARK: - Setup
+
+    private func configure() {
+        view.backgroundColor = .white
+        searchField.delegate = self
+
+        collectionMenuSectionCell.register(MenuSectionCell.self, forCellWithReuseIdentifier: MenuSectionCell.reuseIdentifier)
+        collectionMenuSectionCell.dataSource = self
+        collectionMenuSectionCell.delegate = self
+        collectionMenuSectionCell.allowsSelection = true
+
+        collectionFoodMenuCell.register(SectionFoodCell.self, forCellWithReuseIdentifier: SectionFoodCell.reuseIdentifier)
+        collectionFoodMenuCell.dataSource = self
+        collectionFoodMenuCell.delegate = self
+
+        collectionRestaurantCell.register(RestaurantCell.self, forCellWithReuseIdentifier: RestaurantCell.reuseIdentifier)
+        collectionRestaurantCell.dataSource = self
+        collectionRestaurantCell.delegate = self
+    }
+
+    private func setupViews() {
+        view.addSubview(scrollView)
+        scrollView.addSubview(contentView)
+        contentView.addSubview(searchField)
+        contentView.addSubview(pinImage)
+        contentView.addSubview(addressLabel)
+        contentView.addSubview(collectionMenuSectionCell)
+        contentView.addSubview(foodMenuLabel)
+        contentView.addSubview(foodMenuViewAllLabel)
+        contentView.addSubview(collectionFoodMenuCell)
+        contentView.addSubview(nearMeLabel)
+        contentView.addSubview(nearMeViewAllLabel)
+        contentView.addSubview(collectionRestaurantCell)
+    }
+
+    private func setupConstraints() {
+        NSLayoutConstraint.activate([
+            scrollView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+
+            contentView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            contentView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            contentView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            contentView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            contentView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+
+            searchField.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 8),
+            searchField.centerXAnchor.constraint(equalTo: contentView.centerXAnchor),
+            searchField.widthAnchor.constraint(equalToConstant: 354),
+            searchField.heightAnchor.constraint(equalToConstant: 50),
+
+            pinImage.topAnchor.constraint(equalTo: searchField.bottomAnchor, constant: 16),
+            pinImage.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 30),
+            pinImage.widthAnchor.constraint(equalToConstant: 20),
+            pinImage.heightAnchor.constraint(equalToConstant: 20),
+
+            addressLabel.centerYAnchor.constraint(equalTo: pinImage.centerYAnchor),
+            addressLabel.leadingAnchor.constraint(equalTo: pinImage.trailingAnchor, constant: 10),
+
+            collectionMenuSectionCell.topAnchor.constraint(equalTo: addressLabel.bottomAnchor, constant: 30),
+            collectionMenuSectionCell.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            collectionMenuSectionCell.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            collectionMenuSectionCell.heightAnchor.constraint(equalToConstant: 91),
+
+            foodMenuLabel.topAnchor.constraint(equalTo: collectionMenuSectionCell.bottomAnchor, constant: 30),
+            foodMenuLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 30),
+
+            foodMenuViewAllLabel.centerYAnchor.constraint(equalTo: foodMenuLabel.centerYAnchor),
+            foodMenuViewAllLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -30),
+
+            collectionFoodMenuCell.topAnchor.constraint(equalTo: foodMenuLabel.bottomAnchor, constant: 26),
+            collectionFoodMenuCell.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            collectionFoodMenuCell.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
+            collectionFoodMenuCell.heightAnchor.constraint(equalToConstant: 280),
+
+            nearMeLabel.topAnchor.constraint(equalTo: collectionFoodMenuCell.bottomAnchor, constant: 20),
+            nearMeLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 30),
+
+            nearMeViewAllLabel.centerYAnchor.constraint(equalTo: nearMeLabel.centerYAnchor),
+            nearMeViewAllLabel.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -30),
+
+            collectionRestaurantCell.topAnchor.constraint(equalTo: nearMeLabel.bottomAnchor, constant: 26),
+            collectionRestaurantCell.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
+            collectionRestaurantCell.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -20),
+            collectionRestaurantCell.bottomAnchor.constraint(equalTo: contentView.bottomAnchor),
+        ])
+        collectionFoodCellHeightConstraint = collectionRestaurantCell.heightAnchor.constraint(equalToConstant: 430)
+        collectionFoodCellHeightConstraint?.isActive = true
+    }
+}
+
+// MARK: - UICollectionViewDataSource
+
+extension HomeScreenViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        if collectionView == collectionMenuSectionCell { return FoodConstants.foodItems.count }
+        if collectionView == collectionFoodMenuCell    { return FoodConstants.foodMenuItems.count }
+        return 50
+    }
+
+    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        if collectionView == collectionMenuSectionCell {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: MenuSectionCell.reuseIdentifier, for: indexPath) as? MenuSectionCell else { return UICollectionViewCell() }
+            let item = FoodConstants.foodItems[indexPath.item]
+            cell.configure(with: MenuSectionCellModel(title: item.title, image: item.imageName.image ?? UIImage()))
+            return cell
+
+        } else if collectionView == collectionFoodMenuCell {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: SectionFoodCell.reuseIdentifier, for: indexPath) as? SectionFoodCell else { return UICollectionViewCell() }
+            let item = FoodConstants.foodMenuItems[indexPath.item]
+            cell.configure(with: FoodMenuCellModel(title: item.title, image: item.imageName.image ?? UIImage()))
+            let colors: [CellColorType] = [.blue, .pink, .pink, .blue, .blue, .pink]
+            cell.contentView.backgroundColor = indexPath.item < colors.count ? colors[indexPath.item].color : .brightGray
+            return cell
+
+        } else {
+            guard let cell = collectionView.dequeueReusableCell(withReuseIdentifier: RestaurantCell.reuseIdentifier, for: indexPath) as? RestaurantCell else { return UICollectionViewCell() }
+            return cell
+        }
+    }
+}
+
+// MARK: - UICollectionViewDelegate
+
+extension HomeScreenViewController: UICollectionViewDelegate {
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+        if collectionView == collectionMenuSectionCell {
+            let title = FoodConstants.foodItems[indexPath.item].title
+            navigationController?.pushViewController(RestaurantViewController(sectionTitle: title), animated: true)
+        } else if collectionView == collectionFoodMenuCell {
+            let title = FoodConstants.foodMenuItems[indexPath.item].title
+            navigationController?.pushViewController(RestaurantViewController(sectionTitle: title), animated: true)
+        } else if collectionView == collectionRestaurantCell {
+            navigationController?.pushViewController(DishViewController(), animated: true)
+        }
+    }
+}
+
+// MARK: - HomeScreenViewInput
+
+extension HomeScreenViewController: HomeScreenViewInput {
+    func didTextChange(_ text: String) { searchField.text = text }
+}
+
+// MARK: - UITextFieldDelegate
+
+extension HomeScreenViewController: UITextFieldDelegate {
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
+        textField.resignFirstResponder(); return true
+    }
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+        viewModel?.didChangeSearchText(textField.text ?? "")
+    }
+}
